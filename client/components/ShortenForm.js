@@ -10,6 +10,7 @@ export default function ShortenWithPayment() {
   const [longUrl, setLongUrl] = useState("");
   const [status, setStatus] = useState("");
   const [shortLink, setShortLink] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const handleConnectWallet = async () => {
     if (!window.ethereum) {
@@ -33,10 +34,6 @@ export default function ShortenWithPayment() {
 
       setWalletClient(client);
       setWalletAddress(address);
-
-      // usdc balance
-      
-
       setStatus("Wallet connected!");
     } catch (err) {
       console.error(err);
@@ -49,6 +46,11 @@ export default function ShortenWithPayment() {
     setWalletAddress(null);
     setShortLink("");
     setStatus("Wallet disconnected.");
+  };
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shortLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   const handleShorten = async () => {
@@ -68,15 +70,13 @@ export default function ShortenWithPayment() {
 
       // x402 axios client
       const client = withPaymentInterceptor(
-        axios.create({ baseURL: "http://localhost:3001" }),
+        axios.create({ baseURL: process.env.NEXT_PUBLIC_SERVER_URL }),
         walletClient
       );
 
       const response = await client.post("/shorten", { longUrl });
-
-      const path = response.data.shortPath;
+      const path = response.data.shortUrl;
       setShortLink(`${path}`);
-
       setStatus("Short URL created!");
     } catch (err) {
       console.error(err);
@@ -175,11 +175,36 @@ export default function ShortenWithPayment() {
         {status && <div style={{ marginTop: 16 }}>{status}</div>}
 
         {shortLink && (
-          <div style={{ marginTop: 16 }}>
+          <div
+            style={{
+              marginTop: 20,
+              padding: 16,
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              background: "#fafafa",
+            }}
+          >
             <strong>Your short link:</strong>
-            <div>
-              <a href={shortLink}>{shortLink}</a>
+            <div style={{ marginTop: 8 }}>
+              <a href={shortLink} target="_blank" rel="noopener noreferrer">
+                {shortLink}
+              </a>
             </div>
+
+            <button
+              onClick={handleCopy}
+              style={{
+                marginTop: 12,
+                padding: "8px 12px",
+                background: copied ? "green" : "black",
+                color: "white",
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: 14,
+              }}
+            >
+              {copied ? "Copied!" : "Copy to Clipboard"}
+            </button>
           </div>
         )}
       </div>
