@@ -47,7 +47,7 @@ graph LR
 
 A[User] --> B[Next.js Frontend]
 B --> C[Backend (Node.js + Express)]
-C --> D[(Smart Contract <br/> Base Sepolia)]
+C --> D[Smart Contract - Base Sepolia]
 D --> C
 C -->|Redirect Lookup| E[Redirect Handler]
 E --> A
